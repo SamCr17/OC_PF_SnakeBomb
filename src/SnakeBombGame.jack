@@ -1,0 +1,176 @@
+class SnakeBombGame {
+
+    field Snake snake;
+    field Bomb  bomb0, bomb1, bomb2, bomb3;
+
+    field int score;
+    field int elapsedSec;
+    field int growTimer;
+    field int secTimer;
+    field int tickCount;
+
+    constructor SnakeBombGame new() {
+        let score      = 0;
+        let elapsedSec = 0;
+        let growTimer  = 0;
+        let secTimer   = 0;
+        let tickCount  = 0;
+
+        let snake = Snake.new(32, 17);
+        let bomb0 = Bomb.new(10,  8, 0, 6);
+        let bomb1 = Bomb.new(50,  8, 1, 8);
+        let bomb2 = Bomb.new(30, 25, 2, 10);
+        let bomb3 = Bomb.new(40, 25, 3, 12);
+
+    
+        
+
+        return this;
+    }
+
+    method void dispose() {
+        do snake.dispose();
+        do bomb0.dispose();
+        do bomb1.dispose();
+        do bomb2.dispose();
+        do bomb3.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void run() {
+        var char key;
+        var boolean alive;
+        var int newDir;
+
+        do Screen.clearScreen();
+        do drawBorder();
+        do drawHUD();
+        do snake.draw();
+        do bomb0.draw();
+        do bomb1.draw();
+        do bomb2.draw();
+        do bomb3.draw();
+
+        let alive = true;
+
+        while (alive) {
+
+            // Input
+            let key    = Keyboard.keyPressed();
+            let newDir = -1;
+            if (key = 87)  { let newDir = 0; }
+            if (key = 68)  { let newDir = 1; }
+            if (key = 83)  { let newDir = 2; }
+            if (key = 65)  { let newDir = 3; }
+            if (key = 131) { let newDir = 0; }
+            if (key = 132) { let newDir = 1; }
+            if (key = 133) { let newDir = 2; }
+            if (key = 130) { let newDir = 3; }
+            if (~(newDir = -1)) { do snake.setDirection(newDir); }
+
+            // Mover serpiente
+            let alive = snake.move();
+
+            // Colision serpiente-bomba (antes de mover bombas)
+            if (alive) {
+                if (bomb0.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb1.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb2.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb3.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+            }
+
+
+            if (alive) {
+                let score     = score + 1;
+                let tickCount = tickCount + 1;
+                if (tickCount > 499) { let tickCount = 1; }
+
+                // Grow timer
+                let growTimer = growTimer + 1;
+                if (growTimer > 74) {
+                    let growTimer = 0;
+                    do snake.grow(2);
+                }
+
+                // Mover bombas
+                do bomb0.tick(tickCount);
+                do bomb1.tick(tickCount);
+                do bomb2.tick(tickCount);
+                do bomb3.tick(tickCount);
+
+                // Colision post-movimiento bombas
+                if (bomb0.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb1.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb2.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb3.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+
+                // Timer de segundos — actualizar HUD solo 1x/segundo
+                let secTimer = secTimer + 1;
+                if (secTimer > 12) {
+                    let secTimer   = 0;
+                    let elapsedSec = elapsedSec + 1;
+                    do drawHUD();
+                }
+
+                do drawBorder();
+            }
+
+            do Sys.wait(80);
+        }
+
+        do gameOver();
+        return;
+    }
+
+    
+    method void drawHUD() {
+        // Limpiar franja HUD
+        do Screen.setColor(false);
+        do Screen.drawRectangle(0, 0, 511, 22);
+
+        do Output.moveCursor(0, 0);
+        do Output.printString("SC:");
+        do Output.printInt(score);
+
+        do Output.moveCursor(0, 10);
+        do Output.printString("T:");
+        do Output.printInt(elapsedSec);
+        do Output.printString("s");
+
+        do Output.moveCursor(0, 20);
+        do Output.printString("L:");
+        do Output.printInt(snake.getLength());
+
+        return;
+    }
+
+    method void drawBorder() {
+        do Screen.setColor(true);
+        do Screen.drawLine(0, 23, 511, 23);
+        do Screen.drawLine(0, 23, 0, 255);
+        do Screen.drawLine(511, 23, 511, 255);
+        do Screen.drawLine(0, 255, 511, 255);
+        return;
+    }
+
+    method void gameOver() {
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 22);
+        do Output.printString("** GAME OVER **");
+        do Output.moveCursor(12, 20);
+        do Output.printString("SCORE: ");
+        do Output.printInt(score);
+        do Output.moveCursor(13, 20);
+        do Output.printString("TIME:  ");
+        do Output.printInt(elapsedSec);
+        do Output.printString("s");
+        do Output.moveCursor(14, 20);
+        do Output.printString("LEN:   ");
+        do Output.printInt(snake.getLength());
+        do Output.moveCursor(17, 16);
+        do Output.printString("Presiona una tecla...");
+        while (Keyboard.keyPressed() = 0) { do Sys.wait(50); }
+        return;
+    }
+}

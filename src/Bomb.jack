@@ -1,0 +1,104 @@
+class Bomb {
+    field int x, y;
+    field int id;
+    field int seed;        // siempre 0..255
+    field int moveTimer;
+    field int moveInterval;
+
+    constructor Bomb new(int startX, int startY, int bombId, int interval) {
+        let x            = startX;
+        let y            = startY;
+        let id           = bombId;
+        let seed         = (bombId * 37) + 13;   // 0..255 inicial
+        let moveInterval = interval;
+        let moveTimer    = interval;
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+   
+    method int nextDir() {
+        var int r;
+        // seed = (seed * 75 + 74) mod 256
+        let seed = (seed * 75) + 74;
+        // mod 256 con division entera (seed puede llegar a ~19198 antes del mod, seguro < 32767)
+        let seed = seed - ((seed / 256) * 256);
+        // map 0..255 -> 0..3
+        let r = seed - ((seed / 4) * 4);
+        return r;
+    }
+
+    
+    method boolean tick(int gameTick) {
+        var int dir, newX, newY, tries;
+
+        let moveTimer = moveTimer - 1;
+        if (moveTimer > 0) { return false; }
+        let moveTimer = moveInterval;
+
+        // Mezclar un bit de variedad
+        let seed = seed + 1;
+        if (seed > 255) { let seed = 0; }
+
+        let tries = 0;
+        let newX  = x;
+        let newY  = y;
+
+        while (tries < 8) {
+            let dir  = nextDir();
+            let newX = x;
+            let newY = y;
+            if (dir = 0) { let newY = y - 1; }
+            if (dir = 1) { let newX = x + 1; }
+            if (dir = 2) { let newY = y + 1; }
+            if (dir = 3) { let newX = x - 1; }
+
+            if ((newX > 0) & (newX < 63) & (newY > 3) & (newY < 31)) {
+                let tries = 99;
+            } else {
+                let tries = tries + 1;
+            }
+        }
+
+        do Bomb.eraseCell(x, y);
+        let x = newX;
+        let y = newY;
+        do Bomb.drawCell(x, y);
+        return true;
+    }
+
+    method void draw()  { do Bomb.drawCell(x, y);  return; }
+    method void erase() { do Bomb.eraseCell(x, y); return; }
+    method int getX()   { return x; }
+    method int getY()   { return y; }
+
+    method boolean collidesWith(int gx, int gy) {
+        return ((x = gx) & (y = gy));
+    }
+
+    function void drawCell(int gx, int gy) {
+        var int px, py;
+        let px = gx * 8;
+        let py = gy * 8;
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px, py, px + 7, py + 7);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px + 2, py + 2, px + 5, py + 5);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px + 3, py + 3, px + 4, py + 4);
+        return;
+    }
+
+    function void eraseCell(int gx, int gy) {
+        var int px, py;
+        let px = gx * 8;
+        let py = gy * 8;
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px, py, px + 7, py + 7);
+        return;
+    }
+}

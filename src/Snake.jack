@@ -1,0 +1,142 @@
+class Snake {
+    field int headX, headY;
+    field int direction;
+    field int bodySize;
+    field int tail;
+    field int head;
+    field int growPending;
+
+    // Bases de los arrays en RAM
+    static int BASE_X;   // 16000
+    static int BASE_Y;   // 16060
+    static int CAP;      // 60
+
+    constructor Snake new(int startX, int startY) {
+        let BASE_X = 16000;
+        let BASE_Y = 16060;
+        let CAP    = 60;
+
+        let headX     = startX;
+        let headY     = startY;
+        let direction = 1;
+        let bodySize  = 3;
+        let tail      = 0;
+        let head      = 3;
+        let growPending = 0;
+
+        // Cuerpo inicial: 3 celdas hacia la derecha
+        do Memory.poke(BASE_X + 0, startX - 2);
+        do Memory.poke(BASE_Y + 0, startY);
+        do Memory.poke(BASE_X + 1, startX - 1);
+        do Memory.poke(BASE_Y + 1, startY);
+        do Memory.poke(BASE_X + 2, startX);
+        do Memory.poke(BASE_Y + 2, startY);
+
+        do Snake.drawCell(startX - 2, startY);
+        do Snake.drawCell(startX - 1, startY);
+        do Snake.drawCell(startX,     startY);
+
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void setDirection(int newDir) {
+        if ((direction = 0) & (newDir = 2)) { return; }
+        if ((direction = 2) & (newDir = 0)) { return; }
+        if ((direction = 1) & (newDir = 3)) { return; }
+        if ((direction = 3) & (newDir = 1)) { return; }
+        let direction = newDir;
+        return;
+    }
+
+    method int getDirection() { return direction; }
+    method int getHeadX()    { return headX; }
+    method int getHeadY()    { return headY; }
+    method int getLength()   { return bodySize; }
+
+    method void grow(int amount) {
+        var int newSize;
+        let newSize = bodySize + growPending + amount;
+        if (newSize < (CAP - 2)) {
+            let growPending = growPending + amount;
+        }
+        return;
+    }
+
+    method boolean move() {
+        var int newX, newY;
+        var int tailBx, tailBy;
+        var int nextHead;
+
+        let newX = headX;
+        let newY = headY;
+        if (direction = 0) { let newY = headY - 1; }
+        if (direction = 1) { let newX = headX + 1; }
+        if (direction = 2) { let newY = headY + 1; }
+        if (direction = 3) { let newX = headX - 1; }
+
+        // Colision con paredes
+        if (newX < 1)  { return false; }
+        if (newX > 62) { return false; }
+        if (newY < 4)  { return false; }
+        if (newY > 30) { return false; }
+
+        if (growPending = 0) {
+            // Borrar cola
+            let tailBx = Memory.peek(BASE_X + tail);
+            let tailBy = Memory.peek(BASE_Y + tail);
+            do Snake.eraseCell(tailBx, tailBy);
+            let tail = tail + 1;
+            if (tail = CAP) { let tail = 0; }
+            let bodySize = bodySize - 1;
+        } else {
+            let growPending = growPending - 1;
+        }
+
+        // Escribir nueva cabeza
+        do Memory.poke(BASE_X + head, newX);
+        do Memory.poke(BASE_Y + head, newY);
+        let head = head + 1;
+        if (head = CAP) { let head = 0; }
+        let bodySize = bodySize + 1;
+
+        let headX = newX;
+        let headY = newY;
+        do Snake.drawCell(newX, newY);
+        return true;
+    }
+
+    method void draw() {
+        var int i, idx;
+        let i = 0;
+        while (i < bodySize) {
+            let idx = tail + i;
+            if (idx > (CAP - 1)) { let idx = idx - CAP; }
+            do Snake.drawCell(Memory.peek(BASE_X + idx), Memory.peek(BASE_Y + idx));
+            let i = i + 1;
+        }
+        return;
+    }
+
+    function void drawCell(int gx, int gy) {
+        var int px, py;
+        let px = gx * 8;
+        let py = gy * 8;
+        do Screen.setColor(true);
+        do Screen.drawRectangle(px + 1, py + 1, px + 6, py + 6);
+        return;
+    }
+
+    function void eraseCell(int gx, int gy) {
+        var int px, py;
+        let px = gx * 8;
+        let py = gy * 8;
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px, py, px + 7, py + 7);
+        return;
+    }
+}
