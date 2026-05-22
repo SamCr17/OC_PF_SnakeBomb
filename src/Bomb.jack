@@ -9,7 +9,7 @@ class Bomb {
         let x            = startX;
         let y            = startY;
         let id           = bombId;
-        let seed         = (bombId * 37) + 13;   // 0..255 inicial
+        let seed         = (bombId * 37) + 13;
         let moveInterval = interval;
         let moveTimer    = interval;
         return this;
@@ -20,19 +20,14 @@ class Bomb {
         return;
     }
 
-   
     method int nextDir() {
         var int r;
-        // seed = (seed * 75 + 74) mod 256
         let seed = (seed * 75) + 74;
-        // mod 256 con division entera (seed puede llegar a ~19198 antes del mod, seguro < 32767)
         let seed = seed - ((seed / 256) * 256);
-        // map 0..255 -> 0..3
         let r = seed - ((seed / 4) * 4);
         return r;
     }
 
-    
     method boolean tick(int gameTick) {
         var int dir, newX, newY, tries;
 
@@ -40,7 +35,6 @@ class Bomb {
         if (moveTimer > 0) { return false; }
         let moveTimer = moveInterval;
 
-        // Mezclar un bit de variedad
         let seed = seed + 1;
         if (seed > 255) { let seed = 0; }
 
@@ -48,6 +42,7 @@ class Bomb {
         let newX  = x;
         let newY  = y;
 
+        // Limite ajustado: la bomba ocupa 2x2 celdas, asi que max es 61 y 29
         while (tries < 8) {
             let dir  = nextDir();
             let newX = x;
@@ -57,7 +52,7 @@ class Bomb {
             if (dir = 2) { let newY = y + 1; }
             if (dir = 3) { let newX = x - 1; }
 
-            if ((newX > 0) & (newX < 63) & (newY > 3) & (newY < 31)) {
+            if ((newX > 0) & (newX < 61) & (newY > 3) & (newY < 29)) {
                 let tries = 99;
             } else {
                 let tries = tries + 1;
@@ -76,29 +71,48 @@ class Bomb {
     method int getX()   { return x; }
     method int getY()   { return y; }
 
+    // Colision ampliada: la cabeza de la serpiente choca con cualquiera
+    // de las 4 celdas que ocupa la bomba (2x2)
     method boolean collidesWith(int gx, int gy) {
-        return ((x = gx) & (y = gy));
+        return (
+            ((gx = x)     & (gy = y))     |
+            ((gx = (x+1)) & (gy = y))     |
+            ((gx = x)     & (gy = (y+1))) |
+            ((gx = (x+1)) & (gy = (y+1)))
+        );
     }
 
+    // Dibuja la bomba como un cuadrado 2x2 celdas (16x16 px)
+    // con patron de bomba mas visible
     function void drawCell(int gx, int gy) {
         var int px, py;
         let px = gx * 8;
         let py = gy * 8;
+
         do Screen.setColor(true);
-        do Screen.drawRectangle(px, py, px + 7, py + 7);
+        // Marco exterior completo 16x16
+        do Screen.drawRectangle(px, py, px + 15, py + 15);
+
+        // Hueco interior para dar forma de bomba
         do Screen.setColor(false);
-        do Screen.drawRectangle(px + 2, py + 2, px + 5, py + 5);
+        do Screen.drawRectangle(px + 3, py + 3, px + 12, py + 12);
+
+        // Cruz central (mecha/peligro)
         do Screen.setColor(true);
-        do Screen.drawRectangle(px + 3, py + 3, px + 4, py + 4);
+        do Screen.drawRectangle(px + 7, py + 3, px + 8, py + 12);  // vertical
+        do Screen.drawRectangle(px + 3, py + 7, px + 12, py + 8);  // horizontal
+
         return;
     }
 
+    // Borra 2x2 celdas
     function void eraseCell(int gx, int gy) {
         var int px, py;
         let px = gx * 8;
         let py = gy * 8;
         do Screen.setColor(false);
-        do Screen.drawRectangle(px, py, px + 7, py + 7);
+        do Screen.drawRectangle(px, py, px + 15, py + 15);
         return;
     }
 }
+
