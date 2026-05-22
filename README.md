@@ -11,7 +11,6 @@ Controlas una serpiente que crece a medidas que comes manzanas. El campo está l
 Lo que diferencia a SnakeBomb del snake clásico:
 
 - Las bombas **se mueven solas** con velocidades distintas, generando patrones impredecibles.
-- La serpiente **crece periódicamente** sin necesidad de comer nada, haciendo que el espacio se reduzca inevitablemente.
 - Hay **bombas simultáneas** desde el inicio, cada una con su propio intervalo de movimiento.
 - El puntaje refleja cuánto tiempo lograste sobrevivir.
 
