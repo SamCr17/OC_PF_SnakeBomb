@@ -1,13 +1,17 @@
 class SnakeBombGame {
 
     field Snake snake;
-    field Bomb  bomb0, bomb1, bomb2, bomb3;
+    field Bomb  bomb0, bomb1, bomb2, bomb3,bomb4;
+    field Apple apple;
+
 
     field int score;
     field int elapsedSec;
     field int growTimer;
     field int secTimer;
     field int tickCount;
+    field int bombTimer;
+    field boolean bomb4Active;
 
     constructor SnakeBombGame new() {
         let score      = 0;
@@ -21,9 +25,8 @@ class SnakeBombGame {
         let bomb1 = Bomb.new(50,  8, 1, 8);
         let bomb2 = Bomb.new(30, 25, 2, 10);
         let bomb3 = Bomb.new(40, 25, 3, 12);
-
-    
-        
+        let bomb4 = Bomb.new(55, 15, 4, 5);
+        let apple = Apple.new(99);
 
         return this;
     }
@@ -34,6 +37,8 @@ class SnakeBombGame {
         do bomb1.dispose();
         do bomb2.dispose();
         do bomb3.dispose();
+        do bomb4.dispose();
+        do apple.dispose();
         do Memory.deAlloc(this);
         return;
     }
@@ -51,6 +56,8 @@ class SnakeBombGame {
         do bomb1.draw();
         do bomb2.draw();
         do bomb3.draw();
+        // bomb4 no se dibuja aun, aparece despues
+        do apple.spawn();
 
         let alive = true;
 
@@ -59,10 +66,6 @@ class SnakeBombGame {
             // Input
             let key    = Keyboard.keyPressed();
             let newDir = -1;
-            if (key = 87)  { let newDir = 0; }
-            if (key = 68)  { let newDir = 1; }
-            if (key = 83)  { let newDir = 2; }
-            if (key = 65)  { let newDir = 3; }
             if (key = 131) { let newDir = 0; }
             if (key = 132) { let newDir = 1; }
             if (key = 133) { let newDir = 2; }
@@ -78,6 +81,9 @@ class SnakeBombGame {
                 if (bomb1.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
                 if (bomb2.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
                 if (bomb3.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb4Active) {
+                    if (bomb4.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                }
             }
 
 
@@ -86,11 +92,11 @@ class SnakeBombGame {
                 let tickCount = tickCount + 1;
                 if (tickCount > 499) { let tickCount = 1; }
 
-                // Grow timer
-                let growTimer = growTimer + 1;
-                if (growTimer > 74) {
-                    let growTimer = 0;
-                    do snake.grow(2);
+                // Colision con manzana
+                if (apple.collidesWith(snake.getHeadX(), snake.getHeadY())) {
+                    do apple.erase();
+                    do snake.grow(3);
+                    do apple.spawn();
                 }
 
                 // Mover bombas
@@ -98,12 +104,27 @@ class SnakeBombGame {
                 do bomb1.tick(tickCount);
                 do bomb2.tick(tickCount);
                 do bomb3.tick(tickCount);
+                if (bomb4Active) {
+                    do bomb4.tick(tickCount);
+                }
 
                 // Colision post-movimiento bombas
                 if (bomb0.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
                 if (bomb1.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
                 if (bomb2.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
                 if (bomb3.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                if (bomb4Active) {
+                    if (bomb4.collidesWith(snake.getHeadX(), snake.getHeadY())) { let alive = false; }
+                }
+
+                // Spawn bomb4 a los ~30 segundos
+                if (~bomb4Active) {
+                    let bombTimer = bombTimer + 1;
+                    if (bombTimer > 375) {   // 375 ticks * 80ms = ~30s
+                        let bomb4Active = true;
+                        do bomb4.draw();
+                    }
+                }
 
                 // Timer de segundos — actualizar HUD solo 1x/segundo
                 let secTimer = secTimer + 1;

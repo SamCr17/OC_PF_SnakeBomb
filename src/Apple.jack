@@ -1,0 +1,79 @@
+class Apple {
+    field int x, y;
+    field boolean active;
+    field int seed;
+
+    constructor Apple new(int startSeed) {
+        let seed   = startSeed;
+        let active = false;
+        let x      = 0;
+        let y      = 0;
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // Generador simple para posicion aleatoria
+    method int nextRand(int maxVal) {
+        let seed = seed + 1;
+        if (seed > 255) { let seed = 0; }
+        let seed = (seed * 75) + 74;
+        let seed = seed - ((seed / 256) * 256);
+        return (seed - ((seed / maxVal) * maxVal));
+    }
+
+    // Coloca la manzana en una posicion libre del area de juego
+    method void spawn() {
+        // x: 1..62, y: 4..30
+        let x = 1 + nextRand(62);
+        let y = 4 + nextRand(27);
+        let active = true;
+        do Apple.drawCell(x, y);
+        return;
+    }
+
+    method void erase() {
+        if (active) {
+            do Apple.eraseCell(x, y);
+            let active = false;
+        }
+        return;
+    }
+
+    method boolean isActive() { return active; }
+    method int getX()         { return x; }
+    method int getY()         { return y; }
+
+    // Devuelve true si la cabeza de la serpiente toca la manzana
+    method boolean collidesWith(int hx, int hy) {
+        return (active & (x = hx) & (y = hy));
+    }
+
+    // Dibuja una pequeña manzana: circulo con tallito
+    function void drawCell(int gx, int gy) {
+        var int px, py;
+        let px = gx * 8;
+        let py = gy * 8;
+        do Screen.setColor(true);
+        // Cuerpo de la manzana (rombo simple)
+        do Screen.drawLine(px + 3, py + 1, px + 3, py + 1); // tallo
+        do Screen.drawRectangle(px + 1, py + 2, px + 6, py + 6); // cuerpo
+        do Screen.setColor(false);
+        // Mordida esquina superior izquierda
+        do Screen.drawLine(px + 1, py + 2, px + 1, py + 2);
+        do Screen.drawLine(px + 6, py + 2, px + 6, py + 2);
+        return;
+    }
+
+    function void eraseCell(int gx, int gy) {
+        var int px, py;
+        let px = gx * 8;
+        let py = gy * 8;
+        do Screen.setColor(false);
+        do Screen.drawRectangle(px, py, px + 7, py + 7);
+        return;
+    }
+}
