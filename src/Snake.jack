@@ -66,6 +66,20 @@ class Snake {
         }
         return;
     }
+    
+        method boolean hitsBody(int nx, int ny) {
+        var int i, idx;
+        let i = 0;
+        while (i < bodySize) {
+            let idx = tail + i;
+            if (idx > (CAP - 1)) { let idx = idx - CAP; }
+            if ((Memory.peek(BASE_X + idx) = nx) & (Memory.peek(BASE_Y + idx) = ny)) {
+                return true;
+            }
+            let i = i + 1;
+        }
+        return false;
+    }
 
     method boolean move() {
         var int newX, newY;
@@ -84,6 +98,9 @@ class Snake {
         if (newX > 62) { return false; }
         if (newY < 4)  { return false; }
         if (newY > 30) { return false; }
+
+        // Colision con cuerpo propio
+        if (hitsBody(newX, newY)) { return false; }
 
         if (growPending = 0) {
             // Borrar cola
