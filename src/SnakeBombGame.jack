@@ -106,6 +106,8 @@ class SnakeBombGame {
                 do bomb3.tick(tickCount);
                 if (bomb4Active) {
                     do bomb4.tick(tickCount);
+
+                if (apple.isActive()) { do apple.draw(); }
                 }
 
                 // Colision post-movimiento bombas
