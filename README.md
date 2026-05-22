@@ -85,3 +85,8 @@ Cada manzana tiene su propio generador pseudoaleatorio para calcular su siguient
 2. Compilar todos los archivos `.jack` de la carpeta `src/` con el **JackCompiler**.
 3. Darle a **Run**.
 4. Ejecutar con velocidad **Fast** habilitar entrada **EnableKeyboard** y **Run**.
+
+---
+
+## Link del Vídeo
+[SnakeBomb - Review](https://www.youtube.com/watch?v=Pdsngp24PiE)
