@@ -43,6 +43,11 @@ class Apple {
         return;
     }
 
+    method void draw() {
+    do Apple.drawCell(x, y);
+    return;
+}
+
     method boolean isActive() { return active; }
     method int getX()         { return x; }
     method int getY()         { return y; }
