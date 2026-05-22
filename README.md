@@ -6,24 +6,24 @@ SnakeBomb es un juego desarrollado en el lenguaje **Jack** para la plataforma **
 
 ## Descripción del juego
 
-Controlas una serpiente que crece automáticamente con el tiempo. El campo está lleno de **bombas que se mueven de forma aleatoria** — si tu cabeza choca con una, explota y el juego termina.
+Controlas una serpiente que crece a medidas que comes manzanas. El campo está lleno de **bombas que se mueven de forma aleatoria** — si tu cabeza choca con una, explota y el juego termina.
 
 Lo que diferencia a SnakeBomb del snake clásico:
 
 - Las bombas **se mueven solas** con velocidades distintas, generando patrones impredecibles.
 - La serpiente **crece periódicamente** sin necesidad de comer nada, haciendo que el espacio se reduzca inevitablemente.
-- Hay **4 bombas simultáneas** desde el inicio, cada una con su propio intervalo de movimiento.
+- Hay **bombas simultáneas** desde el inicio, cada una con su propio intervalo de movimiento.
 - El puntaje refleja cuánto tiempo lograste sobrevivir.
 
 ---
 
 ## Equipo de desarrollo
 
-| Nombre | 
-|---|
-| Juan Fernando Duque |
-| Sebastián Henao |
-| Santiago Meneses |
+Nombre 
+
+- Juan Fernando Duque 
+- Sebastián Henao 
+- Santiago Meneses 
 
 ---
 
@@ -47,6 +47,7 @@ OC_PF_SnakeBomb/
 │   ├── SnakeBombGame.jack  # Game loop, HUD, lógica principal
 │   ├── Snake.jack          # Movimiento, crecimiento, colisiones
 │   └── Bomb.jack           # Movimiento aleatorio y detección de colisión
+│   └── Apple.jack          # Manzana
 └── README.md
 ```
 
@@ -73,7 +74,10 @@ Representa la serpiente. Soporta:
 - Colisión con paredes
 
 ### `Bomb.jack`
-Cada bomba tiene su propio generador pseudoaleatorio para calcular su siguiente dirección. Se mueve cada `moveInterval` ticks, con rebote automático si intenta salir del área de juego. Se dibuja como un patrón de 3 capas en pantalla.
+Cada bomba tiene su propio generador pseudoaleatorio para calcular su siguiente dirección. Se mueve cada `moveInterval` ticks, con rebote automático si intenta salir del área de juego. Se dibuja como cuatro cuadros.
+
+### `Apple`
+Cada manzana tiene su propio generador pseudoaleatorio para calcular su siguiente dirección. 
 
 ---
 
