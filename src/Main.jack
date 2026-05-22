@@ -1,9 +1,14 @@
 class Main {
     function void main() {
         var SnakeBombGame game;
-        let game = SnakeBombGame.new();
-        do game.run();
-        do game.dispose();
+        var boolean playing;
+        let playing = true;
+        while (playing) {
+            let game = SnakeBombGame.new();
+            do game.run();
+            do game.dispose();
+        }
         return;
     }
 }
+
