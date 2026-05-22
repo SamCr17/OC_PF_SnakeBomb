@@ -62,7 +62,6 @@ Integra todo el juego. Contiene el game loop principal con:
 - Captura de input (teclado)
 - Actualización de la serpiente y las bombas cada tick
 - Detección de colisiones cabeza-bomba (antes y después de mover las bombas)
-- Sistema de crecimiento periódico (`growTimer`)
 - HUD con puntaje, tiempo y longitud
 - Pantalla de Game Over
 
